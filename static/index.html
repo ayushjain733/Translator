@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator Web App</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 650px; margin: 30px auto; padding: 20px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .lang-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+        select, textarea, input, button { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccd0d5; font-size: 14px; }
+        select { background: white; cursor: pointer; flex-grow: 1; }
+        .icon-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #e4e6eb; color: #050505; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn:hover { background: #d8dadf; }
+        button.primary-btn { background: #0066fe; color: white; border: none; cursor: pointer; font-weight: 600; padding: 12px; transition: background 0.2s; }
+        button.primary-btn:hover { background: #0052cc; }
+        .result-box { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #0066fe; min-height: 50px; position: relative; }
+        .action-links { margin-top: 10px; display: flex; gap: 15px; font-size: 13px; font-weight: bold; }
+        .action-links span { cursor: pointer; color: #0066fe; }
+        .action-links span:hover { text-decoration: underline; }
+        .divider { text-align: center; margin: 10px 0; font-size: 12px; color: #888; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Global AI Translator (1.3B)</h2>
+    
+    <div class="lang-row">
+        <select id="srcLang">
+            <option value="auto" selected>✨ Auto-Detect Language</option>
+            <optgroup label="Popular Global Languages">
+                <option value="english">English</option>
+                <option value="spanish">Spanish</option>
+                <option value="french">French</option>
+                <option value="german">German</option>
+                <option value="mandarin_simplified">Mandarin (Simplified)</option>
+            </optgroup>
+            <!-- Add back the rest of your `<optgroup>` lists here -->
+        </select>
+
+        <button class="icon-btn" onclick="swapLanguages()" title="Swap Languages">⇄</button>
+
+        <select id="tgtLang">
+            <optgroup label="Popular Global Languages">
+                <option value="spanish" selected>Spanish</option>
+                <option value="english">English</option>
+                <option value="hindi">Hindi (हिन्दी)</option>
+                <option value="french">French</option>
+                <option value="german">German</option>
+                <option value="mandarin_simplified">Mandarin (Simplified)</option>
+            </optgroup>
+             <!-- Add back the rest of your `<optgroup>` lists here -->
+        </select>
+    </div>
+
+    <textarea id="inputText" rows="4" placeholder="Type text to translate..."></textarea>
+    <div class="divider">OR UPLOAD AN IMAGE</div>
+    <input type="file" id="imageInput" accept="image/*">
+
+    <button class="primary-btn" onclick="translateContent()">Translate</button>
+
+    <div class="result-box">
+        <strong>Result: <span id="detectedBadge" style="color: #666; font-size: 12px; font-weight: normal;"></span></strong>
+        <p id="outputText" style="margin: 8px 0 0 0;">Translation will appear here...</p>
+        
+        <div class="action-links" id="actionLinks" style="display: none;">
+            <span onclick="copyToClipboard()">📋 Copy</span>
+            <span onclick="speakText()">🔊 Listen</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function swapLanguages() {
+        const src = document.getElementById('srcLang');
+        const tgt = document.getElementById('tgtLang');
+        if (src.value !== "auto") {
+            const temp = src.value;
+            src.value = tgt.value;
+            tgt.value = temp;
+        }
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('outputText').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    }
+
+    function speakText() {
+        const text = document.getElementById('outputText').innerText;
+        const speech = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(speech);
+    }
+
+    async function translateContent() {
+        const text = document.getElementById('inputText').value.trim();
+        const imageFile = document.getElementById('imageInput').files[0];
+        const srcLang = document.getElementById('srcLang').value;
+        const tgtLang = document.getElementById('tgtLang').value;
+        const output = document.getElementById('outputText');
+        const badge = document.getElementById('detectedBadge');
+        const actions = document.getElementById('actionLinks');
+
+        if (!text && !imageFile) return alert("Please enter text or select an image.");
+
+        output.innerText = "Translating... (Cloud processing)";
+        badge.innerText = "";
+        actions.style.display = "none";
+
+        const formData = new FormData();
+        formData.append("src_lang", srcLang);
+        formData.append("tgt_lang", tgtLang);
+
+        try {
+            let response;
+            if (imageFile) {
+                formData.append("file", imageFile);
+                response = await fetch("/translate/image", { method: "POST", body: formData });
+            } else {
+                formData.append("text", text);
+                response = await fetch("/translate/text", { method: "POST", body: formData });
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                output.innerText = "Error: " + data.error;
+            } else {
+                output.innerHTML = imageFile 
+                    ? `<em>Extracted: ${data.extracted_text}</em><br><br>${data.translation}`
+                    : data.translation;
+                
+                if (data.detected) badge.innerText = `(Auto-detected: ${data.detected.toUpperCase()})`;
+                actions.style.display = "flex";
+            }
+        } catch (error) {
+            output.innerText = "Connection failed.";
+        }
+    }
+</script>
+</body>
+</html>
