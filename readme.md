@@ -27,8 +27,8 @@ A lightweight, 100% local, AI-powered translation web application designed to ru
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/local-ai-translator.git
-cd local-ai-translator
+git clone https://github.com/ayushjain733/Translator.git
+cd Translator
 ```
 
 ### 2. Create a Virtual Environment (Recommended)
