@@ -3,112 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Translator Web App</title>
+    <title>Local AI Multilingual Translator</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 650px; margin: 30px auto; padding: 20px; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 25px auto; padding: 20px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .lang-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
         select, textarea, input, button { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccd0d5; font-size: 14px; }
-        select { background: white; cursor: pointer; flex-grow: 1; }
-        .icon-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; background: #e4e6eb; color: #050505; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .icon-btn:hover { background: #d8dadf; }
-        button.primary-btn { background: #0066fe; color: white; border: none; cursor: pointer; font-weight: 600; padding: 12px; transition: background 0.2s; }
-        button.primary-btn:hover { background: #0052cc; }
-        .result-box { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #0066fe; min-height: 50px; position: relative; }
-        .action-links { margin-top: 10px; display: flex; gap: 15px; font-size: 13px; font-weight: bold; }
-        .action-links span { cursor: pointer; color: #0066fe; }
-        .action-links span:hover { text-decoration: underline; }
-        .divider { text-align: center; margin: 10px 0; font-size: 12px; color: #888; font-weight: bold; }
+        select { background: white; cursor: pointer; }
+        button { background: #0066fe; color: white; border: none; cursor: pointer; font-weight: 600; padding: 12px; transition: background 0.2s; }
+        button:hover { background: #0052cc; }
+        .btn-live { background: #e0245e; }
+        .btn-live:hover { background: #c01b4f; }
+        .btn-live.active { background: #17bf63; }
+        .btn-pip { background: #4b5563; margin-top: 4px; }
+        .btn-pip:hover { background: #374151; }
+        .result-box { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #0066fe; min-height: 50px; word-break: break-word; }
+        .divider { text-align: center; margin: 8px 0; font-size: 12px; color: #888; font-weight: bold; }
+        
+        /* Live Screen Capture Styles */
+        #liveContainer { display: none; margin-top: 15px; border-top: 1px solid #e5e7eb; padding-top: 15px; }
+        .video-wrapper { position: relative; display: inline-block; width: 100%; background: #000; border-radius: 8px; overflow: hidden; user-select: none; }
+        #screenVideo { width: 100%; display: block; }
+        #cropOverlay { position: absolute; border: 2px dashed #00ffcc; background: rgba(0, 255, 204, 0.15); pointer-events: none; display: none; }
+        .live-status { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #555; margin-top: 6px; }
+        .badge { padding: 3px 8px; border-radius: 12px; background: #e5e7eb; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Global AI Translator (1.3B)</h2>
+    <h2>Local AI Translator (1.3B)</h2>
     
     <div class="lang-row">
         <select id="srcLang">
-            <option value="auto" selected>✨ Auto-Detect Language</option>
+            <option value="auto" selected>✨ Auto-Detect</option>
             <optgroup label="Popular Global Languages">
                 <option value="english">English</option>
                 <option value="spanish">Spanish</option>
                 <option value="french">French</option>
                 <option value="german">German</option>
                 <option value="mandarin_simplified">Mandarin (Simplified)</option>
+                <option value="mandarin_traditional">Mandarin (Traditional)</option>
+                <option value="japanese">Japanese</option>
+                <option value="korean">Korean</option>
+                <option value="arabic">Arabic</option>
+                <option value="russian">Russian</option>
+                <option value="portuguese">Portuguese</option>
+                <option value="italian">Italian</option>
+                <option value="turkish">Turkish</option>
+                <option value="indonesian">Indonesian</option>
+                <option value="vietnamese">Vietnamese</option>
             </optgroup>
-            <!-- Add back the rest of your `<optgroup>` lists here -->
+            <optgroup label="Indian Languages">
+                <option value="assamese">Assamese (অসমীয়া)</option>
+                <option value="bengali">Bengali (বাংলা)</option>
+                <option value="bhojpuri">Bhojpuri (भोजपुरी)</option>
+                <option value="bodo">Bodo (बड़ो)</option>
+                <option value="chhattisgarhi">Chhattisgarhi (छत्तीसगढ़ी)</option>
+                <option value="dogri">Dogri (डोगरी)</option>
+                <option value="gujarati">Gujarati (ગુજરાતી)</option>
+                <option value="hindi">Hindi (हिन्दी)</option>
+                <option value="kannada">Kannada (ಕನ್ನಡ)</option>
+                <option value="kashmiri_devanagari">Kashmiri (कश्मीरी)</option>
+                <option value="kashmiri_arabic">Kashmiri (كشميري)</option>
+                <option value="konkani">Konkani (कोंकणी)</option>
+                <option value="magahi">Magahi (मगही)</option>
+                <option value="maithili">Maithili (मैथिली)</option>
+                <option value="malayalam">Malayalam (മലയാളം)</option>
+                <option value="manipuri">Manipuri / Meitei (মৈতৈলোন্)</option>
+                <option value="marathi">Marathi (मराठी)</option>
+                <option value="nepali">Nepali (नेपाली)</option>
+                <option value="odia">Odia (ଓଡ଼ିଆ)</option>
+                <option value="punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="sanskrit">Sanskrit (संस्कृतम्)</option>
+                <option value="santali">Santali (Ol Chiki)</option>
+                <option value="sindhi_arabic">Sindhi (سنڌي)</option>
+                <option value="tamil">Tamil (தமிழ்)</option>
+                <option value="telugu">Telugu (తెలుగు)</option>
+                <option value="urdu">Urdu (اردو)</option>
+            </optgroup>
         </select>
 
-        <button class="icon-btn" onclick="swapLanguages()" title="Swap Languages">⇄</button>
+        <span>➔</span>
 
         <select id="tgtLang">
+            <optgroup label="Indian Languages">
+                <option value="hindi" selected>Hindi (हिन्दी)</option>
+                <option value="assamese">Assamese (অসমীয়া)</option>
+                <option value="bengali">Bengali (বাংলা)</option>
+                <option value="bhojpuri">Bhojpuri (भोजपुरी)</option>
+                <option value="bodo">Bodo (बड़ो)</option>
+                <option value="chhattisgarhi">Chhattisgarhi (छत्तीसगढ़ी)</option>
+                <option value="dogri">Dogri (डोगरी)</option>
+                <option value="gujarati">Gujarati (ગુજરાતી)</option>
+                <option value="kannada">Kannada (ಕನ್ನಡ)</option>
+                <option value="kashmiri_devanagari">Kashmiri (कश्मीरी)</option>
+                <option value="kashmiri_arabic">Kashmiri (كشميري)</option>
+                <option value="konkani">Konkani (कोंकणी)</option>
+                <option value="magahi">Magahi (मगही)</option>
+                <option value="maithili">Maithili (मैथिली)</option>
+                <option value="malayalam">Malayalam (മലയാളം)</option>
+                <option value="manipuri">Manipuri / Meitei (মৈতৈলোন্)</option>
+                <option value="marathi">Marathi (मराठी)</option>
+                <option value="nepali">Nepali (नेपाली)</option>
+                <option value="odia">Odia (ଓଡ଼ିଆ)</option>
+                <option value="punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="sanskrit">Sanskrit (संस्कृतम्)</option>
+                <option value="santali">Santali (Ol Chiki)</option>
+                <option value="sindhi_arabic">Sindhi (سنڌي)</option>
+                <option value="tamil">Tamil (தமிழ்)</option>
+                <option value="telugu">Telugu (తెలుగు)</option>
+                <option value="urdu">Urdu (اردو)</option>
+            </optgroup>
             <optgroup label="Popular Global Languages">
-                <option value="spanish" selected>Spanish</option>
                 <option value="english">English</option>
-                <option value="hindi">Hindi (हिन्दी)</option>
+                <option value="spanish">Spanish</option>
                 <option value="french">French</option>
                 <option value="german">German</option>
                 <option value="mandarin_simplified">Mandarin (Simplified)</option>
+                <option value="mandarin_traditional">Mandarin (Traditional)</option>
+                <option value="japanese">Japanese</option>
+                <option value="korean">Korean</option>
+                <option value="arabic">Arabic</option>
+                <option value="russian">Russian</option>
+                <option value="portuguese">Portuguese</option>
+                <option value="italian">Italian</option>
+                <option value="turkish">Turkish</option>
+                <option value="indonesian">Indonesian</option>
+                <option value="vietnamese">Vietnamese</option>
             </optgroup>
-             <!-- Add back the rest of your `<optgroup>` lists here -->
         </select>
     </div>
 
-    <textarea id="inputText" rows="4" placeholder="Type text to translate..."></textarea>
+    <textarea id="inputText" rows="3" placeholder="Type text to translate..."></textarea>
     <div class="divider">OR UPLOAD AN IMAGE</div>
     <input type="file" id="imageInput" accept="image/*">
+    <button onclick="translateContent()">Translate Once</button>
 
-    <button class="primary-btn" onclick="translateContent()">Translate</button>
+    <div class="divider">OR LIVE SCREEN TRANSLATION</div>
+    <button id="liveBtn" class="btn-live" onclick="toggleLiveTranslate()">🖥️ Start Live Screen Translate</button>
 
-    <div class="result-box">
-        <strong>Result: <span id="detectedBadge" style="color: #666; font-size: 12px; font-weight: normal;"></span></strong>
-        <p id="outputText" style="margin: 8px 0 0 0;">Translation will appear here...</p>
-        
-        <div class="action-links" id="actionLinks" style="display: none;">
-            <span onclick="copyToClipboard()">📋 Copy</span>
-            <span onclick="speakText()">🔊 Listen</span>
+    <div id="liveContainer">
+        <div class="live-status" style="margin-bottom: 6px;">
+            <span>💡 <strong>Tip:</strong> Click and drag on the preview below to focus on a specific region (e.g., subtitles/article). Double-click to reset.</span>
+            <span id="liveBadge" class="badge">Idle</span>
+        </div>
+        <div class="video-wrapper" id="videoWrapper">
+            <video id="screenVideo" autoplay muted playsinline></video>
+            <div id="cropOverlay"></div>
+        </div>
+        <button class="btn-pip" onclick="openFloatingHUD()">🪟 Pop-Out Always-on-Top Translator HUD</button>
+    </div>
+
+    <div id="resultWrapper">
+        <div class="result-box" id="resultBox">
+            <strong>Result:</strong>
+            <p id="outputText" style="margin: 6px 0 0 0; font-size: 16px; line-height: 1.4;">Translation will appear here...</p>
         </div>
     </div>
 </div>
 
 <script>
-    function swapLanguages() {
-        const src = document.getElementById('srcLang');
-        const tgt = document.getElementById('tgtLang');
-        if (src.value !== "auto") {
-            const temp = src.value;
-            src.value = tgt.value;
-            tgt.value = temp;
-        }
-    }
+    const API_BASE = "";
+    let screenStream = null;
+    let isLiveRunning = false;
+    let cropRect = null; // Normalized {x, y, w, h} between 0 and 1
+    let isDragging = false;
+    let startX = 0, startY = 0;
 
-    function copyToClipboard() {
-        const text = document.getElementById('outputText').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Copied to clipboard!");
-    }
-
-    function speakText() {
-        const text = document.getElementById('outputText').innerText;
-        const speech = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(speech);
-    }
-
+    // --- Standard One-Off Translation ---
     async function translateContent() {
         const text = document.getElementById('inputText').value.trim();
         const imageFile = document.getElementById('imageInput').files[0];
         const srcLang = document.getElementById('srcLang').value;
         const tgtLang = document.getElementById('tgtLang').value;
         const output = document.getElementById('outputText');
-        const badge = document.getElementById('detectedBadge');
-        const actions = document.getElementById('actionLinks');
 
-        if (!text && !imageFile) return alert("Please enter text or select an image.");
+        if (!text && !imageFile) {
+            output.innerText = "Please enter text or select an image.";
+            return;
+        }
 
-        output.innerText = "Translating... (Cloud processing)";
-        badge.innerText = "";
-        actions.style.display = "none";
-
+        output.innerText = "Translating... (please wait)";
         const formData = new FormData();
         formData.append("src_lang", srcLang);
         formData.append("tgt_lang", tgtLang);
@@ -117,27 +193,200 @@
             let response;
             if (imageFile) {
                 formData.append("file", imageFile);
-                response = await fetch("/translate/image", { method: "POST", body: formData });
+                response = await fetch(`${API_BASE}/translate/image`, { method: "POST", body: formData });
             } else {
                 formData.append("text", text);
-                response = await fetch("/translate/text", { method: "POST", body: formData });
+                response = await fetch(`${API_BASE}/translate/text`, { method: "POST", body: formData });
             }
-
             const data = await response.json();
             if (data.error) {
                 output.innerText = "Error: " + data.error;
             } else {
                 output.innerHTML = imageFile 
-                    ? `<em>Extracted: ${data.extracted_text}</em><br><br>${data.translation}`
+                    ? `<small style="color:#666;">Extracted: ${data.extracted_text}</small><br><strong>${data.translation}</strong>`
                     : data.translation;
-                
-                if (data.detected) badge.innerText = `(Auto-detected: ${data.detected.toUpperCase()})`;
-                actions.style.display = "flex";
             }
         } catch (error) {
-            output.innerText = "Connection failed.";
+            output.innerText = "Connection failed. Please verify that your Uvicorn backend is running.";
+        }
+    }
+
+    // --- Live Screen Translation ---
+    async function toggleLiveTranslate() {
+        const srcSelect = document.getElementById('srcLang');
+        if (srcSelect.value === "auto") {
+            alert("For Live Screen Translation, please select the exact Source Language (e.g., Korean, Japanese, Spanish) from the left dropdown so the OCR knows which script to read!");
+            return;
+        }
+        const liveBtn = document.getElementById('liveBtn');
+        const liveContainer = document.getElementById('liveContainer');
+        const video = document.getElementById('screenVideo');
+
+        if (isLiveRunning) {
+            stopLiveTranslate();
+            return;
+        }
+
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "never" },
+                audio: false
+            });
+            video.srcObject = screenStream;
+            isLiveRunning = true;
+            liveContainer.style.display = "block";
+            liveBtn.innerText = "⏹️ Stop Live Screen Translate";
+            liveBtn.classList.add("active");
+
+            // Automatically stop if user clicks browser's native "Stop sharing" button
+            screenStream.getVideoTracks()[0].addEventListener('ended', stopLiveTranslate);
+
+            // Start continuous non-overlapping loop
+            liveTranslateLoop();
+        } catch (err) {
+            console.error("Screen capture cancelled:", err);
+        }
+    }
+
+    function stopLiveTranslate() {
+        isLiveRunning = false;
+        if (screenStream) {
+            screenStream.getTracks().forEach(track => track.stop());
+            screenStream = null;
+        }
+        document.getElementById('liveContainer').style.display = "none";
+        const liveBtn = document.getElementById('liveBtn');
+        liveBtn.innerText = "🖥️ Start Live Screen Translate";
+        liveBtn.classList.remove("active");
+        document.getElementById('liveBadge').innerText = "Stopped";
+    }
+
+    async function liveTranslateLoop() {
+        const video = document.getElementById('screenVideo');
+        const badge = document.getElementById('liveBadge');
+        const output = document.getElementById('outputText');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        while (isLiveRunning) {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+
+                // Determine region to capture (cropped box or full screen)
+                let sx = 0, sy = 0, sw = vw, sh = vh;
+                if (cropRect && cropRect.w > 0.02 && cropRect.h > 0.02) {
+                    sx = Math.floor(cropRect.x * vw);
+                    sy = Math.floor(cropRect.y * vh);
+                    sw = Math.floor(cropRect.w * vw);
+                    sh = Math.floor(cropRect.h * vh);
+                }
+
+                canvas.width = sw;
+                canvas.height = sh;
+                ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+
+                badge.innerText = "Scanning screen...";
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+
+                const formData = new FormData();
+                formData.append("file", blob, "frame.jpg");
+                formData.append("src_lang", document.getElementById('srcLang').value);
+                formData.append("tgt_lang", document.getElementById('tgtLang').value);
+                formData.append("is_live", "true");
+
+                try {
+                    const response = await fetch(`${API_BASE}/translate/image`, { method: "POST", body: formData });
+                    const data = await response.json();
+
+                    if (data.skipped) {
+                        badge.innerText = "No text in region";
+                    } else if (data.translation) {
+                        badge.innerText = data.cached ? "Up to date (Cached)" : "Translated ✓";
+                        output.innerHTML = `<small style="color:#666;">Screen: ${data.extracted_text}</small><br><strong style="font-size:18px;">${data.translation}</strong>`;
+                    }
+                } catch (err) {
+                    badge.innerText = "Backend Error";
+                }
+            }
+            // Wait 1.2 seconds after completion before scanning next frame to keep CPU cool
+            await new Promise(r => setTimeout(r, 1200));
+        }
+    }
+
+    // --- Interactive Drag-to-Crop Region Selection ---
+    const wrapper = document.getElementById('videoWrapper');
+    const overlay = document.getElementById('cropOverlay');
+
+    wrapper.addEventListener('mousedown', (e) => {
+        const rect = wrapper.getBoundingClientRect();
+        isDragging = true;
+        startX = (e.clientX - rect.left) / rect.width;
+        startY = (e.clientY - rect.top) / rect.height;
+        overlay.style.display = 'block';
+    });
+
+    wrapper.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = wrapper.getBoundingClientRect();
+        const curX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const curY = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+
+        const x = Math.min(startX, curX);
+        const y = Math.min(startY, curY);
+        const w = Math.abs(curX - startX);
+        const h = Math.abs(curY - startY);
+
+        cropRect = { x, y, w, h };
+        overlay.style.left = `${x * 100}%`;
+        overlay.style.top = `${y * 100}%`;
+        overlay.style.width = `${w * 100}%`;
+        overlay.style.height = `${h * 100}%`;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    wrapper.addEventListener('dblclick', () => {
+        cropRect = null;
+        overlay.style.display = 'none';
+    });
+
+    // --- Always-on-Top Floating HUD (Document Picture-in-Picture API) ---
+    async function openFloatingHUD() {
+        const resultBox = document.getElementById('resultBox');
+        const resultWrapper = document.getElementById('resultWrapper');
+
+        if (!('documentPictureInPicture' in window)) {
+            alert("Your browser does not support Always-on-Top Document Picture-in-Picture. Please use Chrome or Edge.");
+            return;
+        }
+
+        try {
+            const pipWindow = await window.documentPictureInPicture.requestWindow({
+                width: 420,
+                height: 180
+            });
+
+            // Copy styles so the floating HUD looks clean
+            const style = pipWindow.document.createElement('style');
+            style.textContent = `
+                body { margin: 0; padding: 12px; font-family: sans-serif; background: #1e293b; color: #f8fafc; display: flex; align-items: center; }
+                .result-box { width: 100%; border-left: 4px solid #38bdf8; padding-left: 12px; }
+                small { color: #94a3b8 !important; display: block; margin-bottom: 4px; }
+                strong { color: #f8fafc; }
+            `;
+            pipWindow.document.head.appendChild(style);
+            pipWindow.document.body.appendChild(resultBox);
+
+            // Return the result box back to the main page when floating HUD is closed
+            pipWindow.addEventListener('pagehide', () => {
+                resultWrapper.appendChild(resultBox);
+            });
+        } catch (err) {
+            console.error("Failed to open floating HUD:", err);
         }
     }
 </script>
+
 </body>
 </html>
